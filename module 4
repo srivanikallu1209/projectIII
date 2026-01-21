@@ -1,0 +1,22 @@
+Java
+
+@Component
+public class NotificationListener {
+
+    private final SimpMessagingTemplate messagingTemplate;
+
+    public NotificationListener(SimpMessagingTemplate messagingTemplate) {
+        this.messagingTemplate = messagingTemplate;
+    }
+
+    @RabbitListener(queues = "notification.queue")
+    public void handlePostEvent(Map<String, Object> event) {
+        String authorId = (String) event.get( "authorId");
+        
+        // Push to specific user's websocket topic
+        messagingTemplate.convertAndSendToUser(
+            authorId, "/topic/notifications", 
+            "Someone you follow just posted!"
+        );
+    }
+}
