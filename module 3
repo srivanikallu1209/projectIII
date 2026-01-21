@@ -1,0 +1,29 @@
+Java
+
+@RestController
+@RequestMapping("/api/posts")
+public class PostController {
+
+    private final PostService postService;
+    private final RabbitTemplate rabbitTemplate;
+
+    public PostController(PostService postService, RabbitTemplate rabbitTemplate) {
+        this.postService = postService;
+        this.rabbitTemplate = rabbitTemplate;
+    }
+
+    @PostMapping
+    public ResponseEntity<Post> createPost(@RequestBody PostDTO postDto) {
+        Post savedPost = postService.save(postDto);
+        
+        // Asynchronous Notification Event
+        Map<String, Object> event = new HashMap<>();
+        event.put("type", "POST_CREATED");
+        event.put("postId", savedPost.getId());
+        event.put("authorId", savedPost.getUserId());
+        
+        rabbitTemplate.convertAndSend("social.exchange", "post.routing.key", event);
+        
+        return ResponseEntity.ok(savedPost);
+    }
+}
