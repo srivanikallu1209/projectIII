@@ -1,0 +1,19 @@
+YAML
+
+services:
+  rabbitmq:
+    image: rabbitmq:3-management
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+  
+  postgres-post:
+    image: postgres
+    environment:
+      POSTGRES_DB: post_db
+      POSTGRES_PASSWORD: password
+
+  eureka-server:
+    build: ./eureka-server
+    ports:
+      - "8761:8761"
